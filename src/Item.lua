@@ -126,6 +126,7 @@ function Item.new(properties: Types.ItemProperties): Types.ItemObject
 	
 	self.IsDraggable = true
 	self.IsDragging = false
+	self._isDropping = false
 	self.MouseDraggingPivot = Vector2.zero
 
 	self.RotateKeyCode = Enum.KeyCode.R
@@ -197,12 +198,19 @@ function Item.new(properties: Types.ItemProperties): Types.ItemObject
 			local itemEnd = itemStart + self.ItemElement.AbsoluteSize
 			self.MouseDraggingPivot = (mousePosition - itemStart) / (itemEnd - itemStart)
 			
+			-- Re-parent ItemElement to top-level ScreenGui so it is not clipped
+			-- by any ClipsDescendants ancestor while dragging
+			local screenGui = self.ItemManager.GuiElement:FindFirstAncestorOfClass("ScreenGui")
+			if screenGui then
+				self.ItemElement.Parent = screenGui
+			end
+
 			TweenService:Create(self.ItemElement, TweenInfo.new(0.2, Enum.EasingStyle.Sine, Enum.EasingDirection.Out), {GroupTransparency = 0.5}):Play()
 			self.ItemElement.ZIndex += 1
 
 			self._draggingTrove:Add(UserInputService.InputBegan:Connect(function(input: InputObject, gameProcessedEvent: boolean)
 				if gameProcessedEvent == false then
-					if input.KeyCode == self.RotateKeyCode then
+					if input.KeyCode == self.RotateKeyCode and not self._isDropping then
 						self:Rotate(1)
 					end
 				end
@@ -251,13 +259,16 @@ function Item.new(properties: Types.ItemProperties): Types.ItemObject
 	self._trove:Add(UserInputService.InputEnded:Connect(function(input)
 		-- Drop item when left mouse stops getting clicked
 		if input.UserInputType == Enum.UserInputType.MouseButton1 and self.IsDragging == true and self.ItemManager ~= nil then
+			if self._isDropping then return end
+			self._isDropping = true
 			self.IsDragging = false
 
-			-- Check if the item is colliding, if not add the item to the itemManager
+			-- Check if the item is colliding or out of bounds, if not add the item to the itemManager
 			local currentItemManager = self.HoveringItemManager or self.ItemManager
 			local gridPos = currentItemManager:GetItemManagerPositionFromAbsolutePosition(self.ItemElement.AbsolutePosition, self.Size, self.PotentialRotation)
 			local isColliding = currentItemManager:IsColliding(self, { self }, gridPos, self.PotentialRotation)
-			if isColliding == false then
+			local isInBounds = currentItemManager:IsRegionInBounds(gridPos, self.Size, self.PotentialRotation)
+			if isColliding == false and isInBounds == true then
 				-- Get new ItemManager, is nil if no new ItemManager is found
 				local newItemManager = nil
 				if self.HoveringItemManager and self.HoveringItemManager ~= self.ItemManager then
@@ -288,6 +299,11 @@ function Item.new(properties: Types.ItemProperties): Types.ItemObject
 			self.HoveringItemManager = nil
 			self.HoveringItemManagerChanged:Fire(self.HoveringItemManager)
 
+			-- Re-parent ItemElement back to its ItemManager's parent before updating dimensions
+			if self.ItemElement.Parent ~= self.ItemManager.GuiElement.Parent then
+				self.ItemElement.Parent = self.ItemManager.GuiElement.Parent
+			end
+
 			-- Update item positioning to current itemManager
 			self:_updateItemToItemManagerDimentions(true, true, true, true)
 
@@ -296,6 +312,7 @@ function Item.new(properties: Types.ItemProperties): Types.ItemObject
 
 			self._draggingTrove:Clean()
 
+			self._isDropping = false
 			self.IsDraggable = true
 		end
 	end))
@@ -327,6 +344,7 @@ function Item:_createDefaultItemAsset(): CanvasGroup
 	image.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
 	image.BackgroundTransparency = 1
 	image.BorderSizePixel = 0
+	image.ScaleType = Enum.ScaleType.Fit
 	image.Size = UDim2.fromScale(1, 1)
 	image.Parent = itemElement
 
@@ -374,12 +392,11 @@ end
 ]=]
 function Item:_updateDraggingPosition()
 	local mousePosition = UserInputService:GetMouseLocation() - guiInset
-	local test = self.ItemManager.GuiElement.Parent.AbsolutePosition
-	if self.HoveringItemManager and self.ItemManager ~= self.HoveringItemManager then
-		--test = self.ItemManager.GuiElement.Parent.AbsolutePosition - self.HoveringItemManager.GuiElement.Parent.AbsolutePosition
-	end
+	-- Use ItemElement's actual parent position so the calculation stays correct
+	-- whether the element is in its normal parent or re-parented to a ScreenGui
+	local parentAbsolutePosition = self.ItemElement.Parent and self.ItemElement.Parent.AbsolutePosition or Vector2.zero
 
-	self.ItemElement.Position = UDim2.fromOffset(mousePosition.X - self.MouseDraggingPivot.X * self.ItemElement.AbsoluteSize.X - test.X, mousePosition.Y - self.MouseDraggingPivot.Y * self.ItemElement.AbsoluteSize.Y - test.Y)
+	self.ItemElement.Position = UDim2.fromOffset(mousePosition.X - self.MouseDraggingPivot.X * self.ItemElement.AbsoluteSize.X - parentAbsolutePosition.X, mousePosition.Y - self.MouseDraggingPivot.Y * self.ItemElement.AbsoluteSize.Y - parentAbsolutePosition.Y)
 
 	local currentItemManager = self.HoveringItemManager or self.ItemManager
 	local gridPos = currentItemManager:GetItemManagerPositionFromAbsolutePosition(self.ItemElement.AbsolutePosition, self.Size, self.PotentialRotation)

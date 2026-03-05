@@ -72,14 +72,13 @@ end
 function SingleSlot:_createGuiElement(properties: Types.SingleSlotProperties): { GuiObject }
 	local container = self._trove:Add(self.Assets.Slot:Clone())
 	container.Name = "SingleSlot"
+	container.Parent = properties.Parent
 
 	container.AnchorPoint = properties.AnchorPoint
 	container.Position = properties.Position
 	container.Size = properties.Size
 	
 	container.Visible = self.Visible
-
-	container.Parent = properties.Parent
 
 	return container
 end

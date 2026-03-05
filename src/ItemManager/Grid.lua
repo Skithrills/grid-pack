@@ -208,8 +208,8 @@ function Grid:GetItemManagerPositionFromAbsolutePosition(absolutePosition: Vecto
 	local gridPosX = math.floor((absolutePosition.X - itemManagerOffset.X) / sizeScale.X - rotationOffset.X + 0.5)
 	local gridPosY = math.floor((absolutePosition.Y - itemManagerOffset.Y) / sizeScale.Y - rotationOffset.Y + 0.5)
 
-	gridPosX = math.clamp(gridPosX, 0, self.GridSize.X - itemSize.X)
-	gridPosY = math.clamp(gridPosY, 0, self.GridSize.Y - itemSize.Y)
+	gridPosX = math.clamp(gridPosX, 0, math.max(0, self.GridSize.X - itemSize.X))
+	gridPosY = math.clamp(gridPosY, 0, math.max(0, self.GridSize.Y - itemSize.Y))
 
 	return Vector2.new(gridPosX, gridPosY)
 end

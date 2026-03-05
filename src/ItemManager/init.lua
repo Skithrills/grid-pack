@@ -169,6 +169,15 @@ function ItemManager:IsColliding(item: Types.ItemObject, ignoredItems: { Types.I
 end
 
 --[=[
+	Checks if a region is in the bounds of the ItemManager. Returns true by default; overridden by Grid.
+
+	@within ItemManager
+]=]
+function ItemManager:IsRegionInBounds(position: Vector2, size: Vector2, rotation: number): boolean
+	return true
+end
+
+--[=[
 	Removes an item from the ItemManager.
 
 	@within ItemManager

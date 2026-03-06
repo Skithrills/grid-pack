@@ -51,6 +51,9 @@ export type ItemManagerProperties = {
 	
 	Visible: boolean?,
 	
+	Filter: ((item: ItemObject) -> boolean)?,
+	MoveMiddleware: ((item: ItemObject, newPosition: Vector2, newRotation: number, lastItemManager: ItemManagerObject, newItemManager: ItemManagerObject?) -> boolean)?,
+	
 	Metadata: { any }?,
 }
 export type ItemManagerObject = {
@@ -61,6 +64,9 @@ export type ItemManagerObject = {
 	ConnectedTransferLinks: { TransferLinkObject },
 	TransferLinkConnected: Signal.Signal<TransferLinkObject>,
 	TransferLinkDisconnected: Signal.Signal<TransferLinkObject>,
+	
+	Filter: ((item: ItemObject) -> boolean)?,
+	MoveMiddleware: ((item: ItemObject, newPosition: Vector2, newRotation: number, lastItemManager: ItemManagerObject, newItemManager: ItemManagerObject?) -> boolean)?,
 	
 	GetOffset: (itemRotation: number) -> Vector2,
 	GetSizeScale: () -> Vector2,

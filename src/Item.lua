@@ -281,6 +281,17 @@ function Item.new(properties: Types.ItemProperties): Types.ItemObject
 					middlewareReturn = self.MoveMiddleware(self, gridPos, self.PotentialRotation, self.ItemManager, newItemManager)
 				end
 
+				-- Check the receiving ItemManager's Filter and MoveMiddleware
+				local receivingItemManager = newItemManager or self.ItemManager
+				if middlewareReturn ~= false and receivingItemManager.Filter and receivingItemManager.Filter(self) == false then
+					middlewareReturn = false
+				end
+				if middlewareReturn ~= false and receivingItemManager.MoveMiddleware then
+					if receivingItemManager.MoveMiddleware(self, gridPos, self.PotentialRotation, self.ItemManager, newItemManager) == false then
+						middlewareReturn = false
+					end
+				end
+
 				if middlewareReturn == true or middlewareReturn == nil then
 					-- Move item
 					self.Position = gridPos
@@ -418,6 +429,13 @@ end
 ]=]
 function Item:_updateItemToItemManagerDimentions(applyPosition: boolean?, applySize: boolean?, usePositionTween: boolean?, useSizeTween: boolean?, itemManager: Types.ItemManagerObject?)	
 	local selectedItemManager = itemManager or self.ItemManager
+
+	-- If the GuiElement has no absolute size yet (ancestor is hidden or ScreenGui is
+	-- disabled), skip the update. The AbsoluteSize property-changed listener already
+	-- connected above will re-run this function once the layout becomes available.
+	if selectedItemManager.GuiElement.AbsoluteSize == Vector2.zero then
+		return
+	end
 	
 	if applyPosition then
 		local rotationOffset = Vector2.zero

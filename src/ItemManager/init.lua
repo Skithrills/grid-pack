@@ -92,6 +92,9 @@ function ItemManager.new(properties: Types.ItemManagerProperties): Types.ItemMan
 	self.TransferLinkConnected = Signal.new()
 	self.TransferLinkDisconnected = Signal.new()
 	
+	self.Filter = properties.Filter
+	self.MoveMiddleware = properties.MoveMiddleware
+	
 	self.Metadata = properties.Metadata or {}
 	
 	return self

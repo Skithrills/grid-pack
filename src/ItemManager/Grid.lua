@@ -332,6 +332,7 @@ end
 function Grid:AddItem(item: Types.ItemObject, at: Vector2?, useTween: boolean?)
 	local itemPosition = at or item.Position
 	assert(item.ItemManager == nil, "Could not add item: Item is already in another ItemManager")
+	assert(self.Filter == nil or self.Filter(item) ~= false, "Could not add item: Item was rejected by the ItemManager's Filter")
 	assert(self:IsColliding(item, { item }, itemPosition) == false, "Could not add item: Item is colliding with an already added item")
 	assert(self:IsRegionInBounds(itemPosition, item.Size, item.Rotation) == true, "Could not add item: Item is out of the grid's bounds")
 	

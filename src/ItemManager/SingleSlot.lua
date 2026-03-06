@@ -159,6 +159,7 @@ end
 ]=]
 function SingleSlot:ChangeItem(item: Types.ItemObject)
 	assert(item.ItemManager == nil, "Could not add item: Item is already in another ItemManager")
+	assert(self.Filter == nil or self.Filter(item) ~= false, "Could not add item: Item was rejected by the ItemManager's Filter")
 	
 	if self.Item then
 		self:RemoveItem()

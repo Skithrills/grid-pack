@@ -138,17 +138,15 @@ function SingleSlot:GetItemManagerPositionFromAbsolutePosition(absolutePosition:
 end
 
 --[=[
-	Checks if an Item is colliding. Use the `at` parameter to override the collision check position, else it will use the Item's position.
+	Checks if an Item is colliding. SingleSlots always return false because
+	ChangeItem natively handles replacing the existing item (swap semantics).
+	Use a Filter to reject unwanted items instead.
 
 	@tag ItemManager Override
 	@within SingleSlot
 ]=]
 function SingleSlot:IsColliding(item: Types.ItemObject, ignoredItems: { Types.ItemObject }, at: Vector2?): boolean
-	if table.find(ignoredItems, self.Item) then
-		return false
-	end
-
-	return self.Item ~= nil
+	return false
 end
 
 --[=[
@@ -157,7 +155,7 @@ end
 	@tag ItemManager Override
 	@within SingleSlot
 ]=]
-function SingleSlot:ChangeItem(item: Types.ItemObject)
+function SingleSlot:ChangeItem(item: Types.ItemObject, useTween: boolean?)
 	assert(item.ItemManager == nil, "Could not add item: Item is already in another ItemManager")
 	assert(self.Filter == nil or self.Filter(item) ~= false, "Could not add item: Item was rejected by the ItemManager's Filter")
 	
@@ -168,7 +166,7 @@ function SingleSlot:ChangeItem(item: Types.ItemObject)
 	self.Item = item
 	self.ItemChanged:Fire(item)
 	
-	item.ItemManagerChanged:Fire(self, true)
+	item.ItemManagerChanged:Fire(self, useTween ~= false)
 end
 
 --[=[

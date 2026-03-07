@@ -14,6 +14,11 @@ export type ItemProperties = {
 	
 	MoveMiddleware: ((item: ItemObject, newGridPosition: Vector2, lastItemManager: ItemManagerObject, newItemManager: ItemManagerObject?) -> boolean)?,
 	
+	GamepadRotateKeyCode: EnumItem?,
+	ShowRotateButton: boolean?,
+	TouchRotationSensitivity: number?,
+	DragThreshold: number?,
+	
 	Metadata: { any }?,
 }
 export type ItemObject = {
@@ -39,7 +44,11 @@ export type ItemObject = {
 	Rotate: (quartersOf360: number) -> nil,
 	
 	Dragging: boolean,
-	MouseDraggingPivot: Vector2,
+	GamepadRotateKeyCode: EnumItem,
+	ShowRotateButton: boolean,
+	TouchRotationSensitivity: number,
+	DragThreshold: number,
+	Clicked: Signal.Signal<nil>,
 	
 	Metadata: { any },
 }

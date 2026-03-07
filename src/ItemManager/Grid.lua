@@ -186,6 +186,10 @@ end
 function Grid:GetAbsoluteSizeFromItemSize(itemSize: Vector2, itemRotation: number): Vector2
 	local sizeScale = self:GetSizeScale()
 	
+	if itemRotation % 2 == 1 then
+		itemSize = Vector2.new(itemSize.Y, itemSize.X)
+	end
+
 	return Vector2.new(math.round(sizeScale.X), math.round(sizeScale.Y)) * itemSize
 end
 
@@ -199,14 +203,12 @@ function Grid:GetItemManagerPositionFromAbsolutePosition(absolutePosition: Vecto
 	local itemManagerOffset = self.GuiElement.AbsolutePosition
 	local sizeScale = self:GetSizeScale()
 
-	local rotationOffset = Vector2.zero
 	if itemRotation % 2 == 1 then
-		rotationOffset = Vector2.new(itemSize.Y, itemSize.X) / 2 - itemSize / 2
 		itemSize = Vector2.new(itemSize.Y, itemSize.X)
 	end
 
-	local gridPosX = math.floor((absolutePosition.X - itemManagerOffset.X) / sizeScale.X - rotationOffset.X + 0.5)
-	local gridPosY = math.floor((absolutePosition.Y - itemManagerOffset.Y) / sizeScale.Y - rotationOffset.Y + 0.5)
+	local gridPosX = math.floor((absolutePosition.X - itemManagerOffset.X) / sizeScale.X + 0.5)
+	local gridPosY = math.floor((absolutePosition.Y - itemManagerOffset.Y) / sizeScale.Y + 0.5)
 
 	gridPosX = math.clamp(gridPosX, 0, math.max(0, self.GridSize.X - itemSize.X))
 	gridPosY = math.clamp(gridPosY, 0, math.max(0, self.GridSize.Y - itemSize.Y))

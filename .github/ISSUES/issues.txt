@@ -1,7 +1,7 @@
 Known Issues (easiest to hardest to fix)
 ==========================================
 
-1. Item freezes when dropped onto a grid smaller than the item
+1. [SOLVED] Item freezes when dropped onto a grid smaller than the item
    Clamp calls in Grid fail when the grid is narrower or shorter than the item
    being dragged, because max becomes less than min. The item gets stuck and
    throws two errors. Fixing it requires guarding the clamp max values with
@@ -9,64 +9,57 @@ Known Issues (easiest to hardest to fix)
    drop position. The exact lines to change are clearly identified and the patch
    is straightforward.
 
-2. Items are invisible while dragging inside a ClipsDescendants GuiObject
+2. [SOLVED] Items are invisible while dragging inside a ClipsDescendants GuiObject
    When a grid lives inside a frame with ClipsDescendants enabled the item
    element is clipped and disappears the moment it is dragged outside the frame
    boundary. Re-parenting the dragged item element to a top-level ScreenGui
    while it is being dragged and returning it afterwards would resolve this.
 
-3. Single slot appears completely white and is non-functional after setup
+3. [SOLVED] Single slot appears completely white and is non-functional after setup
    The slot canvas group renders as solid white instead of showing the expected
    background. This is likely an initialisation ordering problem where the slot
    element properties are applied before the GuiObject has fully entered the
    DataModel. Ensuring the slot element is added to the parent before setting
    visual properties should fix it.
 
-4. Images display incorrectly inside single slots
+4. [SOLVED] Images display incorrectly inside single slots
    Item images are offset or scaled wrongly when placed inside a single slot.
    The sizing logic for single slots does not account for the image label
    position correctly. Adjusting the image scaling/anchoring code that is
    specific to the single-slot path is all that is needed.
 
-5. Spam-clicking and rotating lets items pass through other items or escape the grid
+5. [SOLVED] Spam-clicking and rotating lets items pass through other items or escape the grid
    Rapid click-and-rotate input causes the drop handler to run before the
    collision/bounds state has fully updated, allowing an item to be placed on
    top of another item or outside the grid boundary. Adding a debounce or a
    lock flag around the drop finalization logic would prevent the race
    condition.
 
-6. Improper positioning and scale of items created while a parent ancestor is hidden
+6. [SOLVED] Improper positioning and scale of items created while a parent ancestor is hidden
    AbsoluteSize and AbsolutePosition return zero when any ancestor has Visible
    set to false or when a ScreenGui is disabled, so item elements are sized and
    placed incorrectly. The fix involves listening for the ancestor becoming
    visible and recalculating layout at that point, or falling back to Size
    offset values when absolute values are unavailable.
 
-7. No built-in way to restrict which item types a single slot or grid will accept
+7. [SOLVED] No built-in way to restrict which item types a single slot or grid will accept
    There is currently no blacklist or whitelist mechanism on ItemManagers.
    Users have to duplicate filtering logic every time they connect a
    TransferLink. Adding an optional filter callback to each ItemManager (similar
    to MoveMiddleware on items) would solve this and requires extending the
    ItemManager API surface.
 
-8. No MoveMiddleware equivalent for ItemManagers
+8. [SOLVED] No MoveMiddleware equivalent for ItemManagers
    Items support a MoveMiddleware callback that can intercept and cancel a move
    before it happens, but no equivalent hook exists on the receiving
    ItemManager. Implementing one requires designing the callback signature,
    threading the call through the move pipeline, and documenting the new API.
 
-9. [RESOLVED] Drag detection does not work on touch or gamepad devices
+9. [SOLVED] Drag detection does not work on touch or gamepad devices
    The current implementation hooks mouse input events and an interaction
    button, so dragging does not work on non-mouse platforms. UIDragDetectors
-   (once fully released by Roblox) would provide native multi-platform drag
-   support and simplify the backend considerably. Until they are stable this
-   requires either a significant custom input abstraction layer or waiting on
-   the Roblox platform feature.
-   
-   RESOLVED: Drag input now uses UIDragDetector (TranslatePlane + CustomOffset)
-   instead of MouseButton1Down/InputChanged/InputEnded. InteractionButton is
-   kept as an optional drag-handle region. Touch gesture rotation, gamepad
-   rotation (ButtonR1), and an optional on-screen rotate button were added.
+   would provide native multi-platform drag support and simplify the backend considerably.
+   This requires a significant custom input abstraction layer.
 
 10. Inventories are entirely client-managed with no server authority
     All grid and item state lives on the client, making it difficult to persist

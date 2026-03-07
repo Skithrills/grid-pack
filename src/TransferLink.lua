@@ -1,10 +1,3 @@
---// Services
-local UserInputService = game:GetService("UserInputService")
-local GuiService = game:GetService("GuiService")
-
---// Constants
-local guiInset = GuiService:GetGuiInset()
-
 --// Types
 local Types = require(script.Parent.Types)
 
@@ -80,21 +73,21 @@ end
 
 	@within TransferLink
 ]=]
-function TransferLink:GetClosestItemOverlappingItemManagers(item: Types.ItemObject): { Types.ItemManagerObject }
+function TransferLink:GetClosestItemOverlappingItemManagers(item: Types.ItemObject, cursorPosition: Vector2?): { Types.ItemManagerObject }
 	local overlappingItemManagers = self:GetItemOverlappingItemManagers(item)
-	local mousePosition = UserInputService:GetMouseLocation() - guiInset
+	local sortPosition = cursorPosition or (item.ItemElement.AbsolutePosition + item.ItemElement.AbsoluteSize / 2)
 	
 	table.sort(overlappingItemManagers, function(a, b)
 		local aBorderPosition = Vector2.new(
-			math.clamp(mousePosition.X, a.GuiElement.AbsolutePosition.X, a.GuiElement.AbsolutePosition.X + a.GuiElement.AbsoluteSize.X),
-			math.clamp(mousePosition.Y, a.GuiElement.AbsolutePosition.Y, a.GuiElement.AbsolutePosition.Y + a.GuiElement.AbsoluteSize.Y)
+			math.clamp(sortPosition.X, a.GuiElement.AbsolutePosition.X, a.GuiElement.AbsolutePosition.X + a.GuiElement.AbsoluteSize.X),
+			math.clamp(sortPosition.Y, a.GuiElement.AbsolutePosition.Y, a.GuiElement.AbsolutePosition.Y + a.GuiElement.AbsoluteSize.Y)
 		)
 		local bBorderPosition = Vector2.new(
-			math.clamp(mousePosition.X, b.GuiElement.AbsolutePosition.X, b.GuiElement.AbsolutePosition.X + b.GuiElement.AbsoluteSize.X),
-			math.clamp(mousePosition.Y, b.GuiElement.AbsolutePosition.Y, b.GuiElement.AbsolutePosition.Y + b.GuiElement.AbsoluteSize.Y)
+			math.clamp(sortPosition.X, b.GuiElement.AbsolutePosition.X, b.GuiElement.AbsolutePosition.X + b.GuiElement.AbsoluteSize.X),
+			math.clamp(sortPosition.Y, b.GuiElement.AbsolutePosition.Y, b.GuiElement.AbsolutePosition.Y + b.GuiElement.AbsoluteSize.Y)
 		)
-		local aDistance = (aBorderPosition - mousePosition).Magnitude
-		local bDistance = (bBorderPosition - mousePosition).Magnitude
+		local aDistance = (aBorderPosition - sortPosition).Magnitude
+		local bDistance = (bBorderPosition - sortPosition).Magnitude
 		
 		return aDistance < bDistance
 	end)
